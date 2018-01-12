@@ -91,7 +91,8 @@
     " In your .vimrc.before.local file
     " list only the plugin groups you will use
     if !exists('g:spf13_bundle_groups')
-        let g:spf13_bundle_groups=['general', 'writing', 'neocomplete', 'programming', 'php', 'ruby', 'python', 'javascript', 'html', 'misc',]
+        " pzhaoyang commented let g:spf13_bundle_groups=['general', 'writing', 'neocomplete', 'programming', 'php', 'ruby', 'python', 'javascript', 'html', 'misc',]
+        let g:spf13_bundle_groups=['wrangler']
     endif
 
     " To override all the included bundles, add the following to your
@@ -99,6 +100,34 @@
     "   let g:override_spf13_bundles = 1
     if !exists("g:override_spf13_bundles")
 
+    " wrangler {
+        if count(g:spf13_bundle_groups, 'wrangler')
+
+            " plug1: nerdtree
+            Bundle 'scrooloose/nerdtree'
+
+            " plug2: colors
+            " commented it Bundle 'spf13/vim-colors'
+
+            " plug3: airline
+            Bundle 'vim-airline/vim-airline'
+            Bundle 'vim-airline/vim-airline-themes'
+
+            " plug4: easymotion
+            Bundle 'easymotion/vim-easymotion'
+
+            " plug5: undotree
+            Bundle 'mbbill/undotree'
+
+            " plug6: syntastic
+            Bundle 'scrooloose/syntastic'
+
+            " plug7: rainbow(bracket highlight)
+            Bundle 'luochen1990/rainbow'
+
+        endif
+
+    " }
     " General {
         if count(g:spf13_bundle_groups, 'general')
             Bundle 'scrooloose/nerdtree'
