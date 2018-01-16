@@ -1,27 +1,13 @@
 #!/usr/bin/env bash
 
-#   Copyright 2014 Steve Francia
-#
-#   Licensed under the Apache License, Version 2.0 (the "License");
-#   you may not use this file except in compliance with the License.
-#   You may obtain a copy of the License at
-#
-#       http://www.apache.org/licenses/LICENSE-2.0
-#
-#   Unless required by applicable law or agreed to in writing, software
-#   distributed under the License is distributed on an "AS IS" BASIS,
-#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#   See the License for the specific language governing permissions and
-#   limitations under the License.
 
 ############################  SETUP PARAMETERS
 app_name='spf13-vim'
 [ -z "$APP_PATH" ] && APP_PATH="$HOME/.spf13-vim-3"
 [ -z "$REPO_URI" ] && REPO_URI='https://github.com/pzhaoyang/spf13-vim'
 [ -z "$REPO_BRANCH" ] && REPO_BRANCH='3.0'
-debug_mode='0'
-fork_maintainer='0'
 [ -z "$VUNDLE_URI" ] && VUNDLE_URI="https://github.com/gmarik/vundle.git"
+debug_mode='1'
 
 ############################  BASIC SETUP TOOLS
 msg() {
@@ -104,12 +90,12 @@ sync_repo() {
     msg "Trying to update $repo_name"
 
     if [ ! -e "$repo_path" ]; then
-        mkdir -p "$repo_path"
-        git clone -b "$repo_branch" "$repo_uri" "$repo_path"
+        mkdir -pv "$repo_path"
+        git clone -q -b "$repo_branch" "$repo_uri" "$repo_path"
         ret="$?"
         success "Successfully cloned $repo_name."
     else
-        cd "$repo_path" && git pull origin "$repo_branch"
+        cd "$repo_path" && git pull -q origin "$repo_branch"
         ret="$?"
         success "Successfully updated $repo_name"
     fi
@@ -123,14 +109,6 @@ create_symlinks() {
 
     lnif "$source_path/.vimrc"         "$target_path/.vimrc"
     lnif "$source_path/.vimrc.bundles" "$target_path/.vimrc.bundles"
-    lnif "$source_path/.vim"           "$target_path/.vim"
-
-    if program_exists "nvim"; then
-        lnif "$source_path/.vim"       "$target_path/.config/nvim"
-        lnif "$source_path/.vimrc"     "$target_path/.config/nvim/init.vim"
-    fi
-
-    touch  "$target_path/.vimrc.local"
 
     ret="$?"
     success "Setting up vim symlinks."
@@ -160,12 +138,7 @@ setup_vundle() {
     local system_shell="$SHELL"
     export SHELL='/bin/sh'
 
-    vim \
-        -u "$1" \
-        "+set nomore" \
-        "+BundleInstall!" \
-        "+BundleClean" \
-        "+qall"
+    vim -u "$1" "+set nomore" "+BundleInstall!" "+BundleClean" "+qall"
 
     export SHELL="$system_shell"
 
@@ -178,28 +151,19 @@ variable_set "$HOME"
 program_must_exist "vim"
 program_must_exist "git"
 
-do_backup       "$HOME/.vim" \
-                "$HOME/.vimrc" \
-                "$HOME/.gvimrc"
+do_backup       "$HOME/.vim" "$HOME/.vimrc" "$HOME/.gvimrc"
 
-sync_repo       "$APP_PATH" \
-                "$REPO_URI" \
-                "$REPO_BRANCH" \
-                "$app_name"
+[ ! -e $APP_PATH ] && [ -e $HOME/$app_name ] && lnif $HOME/$app_name $APP_PATH
+sync_repo "$APP_PATH" "$REPO_URI" "$REPO_BRANCH" "$app_name"
 
-create_symlinks "$APP_PATH" \
-                "$HOME"
+create_symlinks "$APP_PATH" "$HOME"
 
-setup_fork_mode "$fork_maintainer" \
-                "$APP_PATH" \
-                "$HOME"
+[ -z $bundle ] && bundle="$HOME/bundle" && [ ! -e $bundle ] && sync_repo "$bundle/vundle" "$VUNDLE_URI" "master" "vundle"
+[ ! -e "$HOME/.vim/bundle" ] && mkdir -p "$HOME/.vim" && lnif $bundle "$HOME/.vim/bundle"
 
-sync_repo       "$HOME/.vim/bundle/vundle" \
-                "$VUNDLE_URI" \
-                "master" \
-                "vundle"
+sync_repo "$HOME/.vim/bundle/vundle" "$VUNDLE_URI" "master" "vundle"
 
 setup_vundle    "$APP_PATH/.vimrc.bundles.default"
 
 msg             "\nThanks for installing $app_name."
-msg             "© `date +%Y` http://vim.spf13.com/"
+msg             "© `date +%Y` http://vim.spf13.com/\n"
