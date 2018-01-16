@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 
 app_dir="$HOME/.spf13-vim-3"
-
+clean="rm -rf"
 warn() {
     echo "$1" >&2
 }
@@ -11,8 +11,12 @@ die() {
     exit 1
 }
 
-rm $HOME/.vimrc
-rm $HOME/.vimrc.bundles
-rm -rf $HOME/.vim
+$clean $HOME/.vimrc
+$clean $HOME/.vimrc.bundles
+$clean $HOME/.vim
 
-rm -rf $app_dir
+$clean $app_dir
+
+#clean trash
+cd $HOME
+$clean .vimswap .vimviews .vimundo .vimbackup .vimrc.local .vimrc.before
